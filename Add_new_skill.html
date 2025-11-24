@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" style="scroll-behavior: smooth;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Skill - KnowledgeSwitch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Custom Tailwind config for dark mode, fonts, and animation
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #000;
+        }
+        /* Hide the default radio button */
+        .skill-select input[type="radio"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            position: absolute;
+        }
+
+        /* Base label styling */
+        .skill-select label {
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+        }
+
+        /* TEACH Button Styling (Green Focus) */
+        /* Target the label sibling right after the checked 'teach' radio input */
+        .skill-select input[value="teach"]:checked + .role-label-teach {
+            background-color: #065f46; /* green-700 */
+            border-color: #34d399; /* emerald-400 */
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.3); /* subtle glow */
+            font-weight: 700;
+        }
+
+        /* LEARN Button Styling (Blue Focus) */
+        /* Target the label sibling right after the checked 'learn' radio input */
+        .skill-select input[value="learn"]:checked + .role-label-learn {
+            background-color: #1e40af; /* blue-800 */
+            border-color: #3b82f6; /* blue-500 */
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); /* subtle glow */
+            font-weight: 700;
+        }
+
+        /* Hover for unselected buttons */
+        .skill-select .role-label-teach:hover,
+        .skill-select .role-label-learn:hover {
+            background-color: #1f2937; /* gray-800 for hover */
+            border-color: #4b5563; /* gray-600 for hover */
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+    
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-xl border-b border-gray-800">
+        <div class="container mx-auto px-4 md:px-6 flex justify-between items-center py-4">
+            <a href="#" class="text-2xl font-bold text-white group">
+                Knowledge<span class="text-blue-500">Switch</span>
+            </a>
+            <a href="#" id="dashboard-link" class="px-4 py-2 text-sm rounded-lg font-semibold transition-all duration-300 bg-gray-800/30 text-gray-300 hover:text-blue-400 hover:bg-gray-800 backdrop-blur-sm">
+                Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content: Add Skill Form -->
+    <main>
+        <section class="py-16 md:py-24 bg-black">
+            <div class="container mx-auto px-4 md:px-6 max-w-4xl">
+                <header class="text-center mb-12">
+                    <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+                        What will you <span class="text-blue-500">Learn</span> &amp; <span class="text-green-400">Teach</span>?
+                    </h1>
+                    <p class="text-lg text-gray-400 mt-4">
+                        Select skills you have and skills you want to gain. The system will find your match.
+                    </p>
+                </header>
+                
+                <!-- Message Box for Feedback -->
+                <div id="saveMessage" class="hidden p-4 mb-8 rounded-lg shadow-lg text-center" role="alert"></div>
+                
+                <form id="add-skill-form">
+                    
+                    <!-- Skill Selection Container -->
+                    <div class="space-y-12">
+                        
+                        <!-- Skill Categories with Icons -->
+                        {% set categories = [
+                            ('Programming & Tech', '💻', ['Python', 'C++', 'JavaScript', 'Full Stack Development', 'Data Structures & Algorithms', 'Machine Learning', 'Cloud Computing (AWS, Azure, GCP)', 'DevOps (Docker, CI/CD)']),
+                            ('Design & Visual Creation', '🎨', ['Graphic Design', 'UI/UX Design (Figma)', 'Video Editing', 'Motion Graphics (After Effects)', '3D Modelling (Blender, Maya)', 'Digital Illustration']),
+                            ('Digital Marketing & Business', '📈', ['Digital Marketing', 'Social Media Marketing', 'SEO', 'Google Ads', 'Product Management', 'Project Management (Notion, Jira)']),
+                            ('Finance & Stock Market', '💰', ['Finance for Beginners', 'Stock Market Investing', 'Trading (Technical Analysis — TradingView)', 'Business Analytics']),
+                            ('Academics & Competitive Exams', '🧠', ['Mathematics', 'Physics', 'Quantitative Aptitude', 'Logical Reasoning', 'CAT / GATE / JEE / NEET Theory', 'SSC / Banking Prep']),
+                            ('Languages', '🗣️', ['Spoken English', 'Hindi', 'French', 'German', 'Japanese', 'Accent Training']),
+                            ('Music, Art & Fitness', '🎸', ['Guitar', 'Piano / Keyboard', 'Singing', 'Music Production (FL Studio)', 'Yoga', 'Meditation', 'Drawing (Digital or Pencil)', 'Dance (beginner steps)']),
+                            ('Productivity & Software Tools', '🛠️', ['Excel', 'PowerPoint', 'Word', 'Notion', 'Canva', 'Google Workspace', 'Git / GitHub', 'Automation Tools'])
+                        ] %}
+
+                        {% for category, icon, skills in categories %}
+                        <div class="bg-gray-900 p-6 sm:p-8 rounded-xl border border-gray-800 shadow-2xl">
+                            <h2 class="text-2xl font-bold text-blue-400 mb-6 flex items-center">
+                                <span class="mr-3 text-3xl">{{ icon }}</span>
+                                {{ category }}
+                            </h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 skill-select">
+                                
+                                {% for skill in skills %}
+                                <!-- START: Cohesive Skill Card -->
+                                <div class="relative group p-3 border border-gray-700 rounded-xl bg-gray-800 hover:border-blue-500 transition-all duration-300">
+                                    {% set skill_name_clean = skill|lower|replace(' ', '_')|replace('/', '_')|replace('(', '_')|replace(')', '_')|replace('-', '_')|replace('__', '_') %}
+
+                                    <!-- The radio buttons remain hidden -->
+                                    <input type="radio" id="skill-{{ loop.parent.loop.index }}-{{ loop.index }}-teach" name="role_for_skill_{{ skill_name_clean }}" value="teach" class="hidden">
+                                    <input type="radio" id="skill-{{ loop.parent.loop.index }}-{{ loop.index }}-learn" name="role_for_skill_{{ skill_name_clean }}" value="learn" class="hidden">
+                                    
+                                    <!-- Skill Name Header -->
+                                    <p class="text-base font-semibold text-white mb-3 text-left border-b border-gray-700 pb-2">{{ skill }}</p>
+                                    
+                                    <!-- Teach/Learn Buttons -->
+                                    <div class="flex space-x-2">
+                                        <!-- Note: .role-label-teach class is used for CSS targeting -->
+                                        <label for="skill-{{ loop.parent.loop.index }}-{{ loop.index }}-teach" class="role-label-teach flex-1 text-center py-2 px-1 text-xs rounded-lg cursor-pointer transition-all duration-200 bg-gray-900 text-gray-400 border border-gray-700">
+                                            <span class="font-bold">TEACH</span>
+                                        </label>
+                                        
+                                        <!-- Note: .role-label-learn class is used for CSS targeting -->
+                                        <label for="skill-{{ loop.parent.loop.index }}-{{ loop.index }}-learn" class="role-label-learn flex-1 text-center py-2 px-1 text-xs rounded-lg cursor-pointer transition-all duration-200 bg-gray-900 text-gray-400 border border-gray-700">
+                                            <span class="font-bold">LEARN</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Contextual Upload Dropzone for 'Teach' selection -->
+                                    <div class="mt-4 p-4 border border-dashed border-gray-700 rounded-lg text-center bg-gray-950/50" data-skill-upload-container="{{ skill_name_clean }}" style="display:none;">
+                                        <p class="text-sm font-semibold text-gray-300 mb-2">
+                                            {% if 'Development' in skill or 'SEO' in skill or 'Design' in skill or 'Editing' in skill %}
+                                            <span class="text-green-400">Portfolio Link/Upload:</span> Show us your work!
+                                            {% elif 'Finance' in skill or 'Business' in skill or 'Analytics' in skill or 'Project Management' in skill %}
+                                            <span class="text-green-400">CV/LinkedIn Link:</span> Validate your expertise.
+                                            {% else %}
+                                            <span class="text-green-400">Work Sample/Video Link:</span> Upload a sample of your skill (e.g., a short video of you playing the guitar or drawing).
+                                            {% endif %}
+                                        </p>
+                                        <!-- NOTE: File uploads are not fully functional in this environment, but we keep the field to capture the intent and the link field for simplicity. -->
+                                        <input type="file" name="upload_for_skill_{{ skill_name_clean }}" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500/10 file:text-blue-300 hover:file:bg-blue-500/20" accept=".pdf,.doc,.docx,.zip,image/*,video/*">
+                                        <p class="text-xs text-gray-500 mt-1">Max 5MB per file (not uploaded in this demo). Or enter a public link below.</p>
+                                        <input type="url" name="link_for_skill_{{ skill_name_clean }}" placeholder="Public Portfolio/CV Link (Optional)" class="w-full mt-2 p-2 text-sm bg-gray-900 border border-gray-700 rounded-lg text-gray-200 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    
+                                </div>
+                                <!-- END: Cohesive Skill Card -->
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="mt-16 text-center">
+                        <button type="submit" id="save-button" class="px-10 py-3 rounded-lg font-semibold text-lg transition-all shadow-md transform hover:-translate-y-0.5 bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/30">
+                            Save My Skills & Find Matches
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-gray-400 py-8 border-t border-gray-800">
+        <div class="container mx-auto px-4 md:px-6 text-center text-sm">
+            <p>© 2025 Knowledge Switch.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth, userId = null;
+        let isAuthReady = false;
+        
+        // Set Firebase log level for debugging
+        setLogLevel('debug');
+
+        const saveMessageEl = document.getElementById('saveMessage');
+        const saveButton = document.getElementById('save-button');
+
+        // Function to display messages to the user
+        function showMessage(text, type = 'info') {
+            saveMessageEl.textContent = text;
+            saveMessageEl.className = 'p-4 mb-8 rounded-lg shadow-lg text-center';
+            if (type === 'success') {
+                saveMessageEl.classList.add('bg-green-900', 'text-green-300', 'border', 'border-green-700');
+            } else if (type === 'error') {
+                saveMessageEl.classList.add('bg-red-900', 'text-red-300', 'border', 'border-red-700');
+            } else {
+                saveMessageEl.classList.add('bg-blue-900', 'text-blue-300', 'border', 'border-blue-700');
+            }
+            saveMessageEl.classList.remove('hidden');
+        }
+
+        // 1. Firebase Initialization and Authentication
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase configuration is missing.");
+                showMessage("System error: Firebase configuration not found.", 'error');
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Set up auth state listener
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        console.log("Authentication successful. User ID:", userId);
+                        // Once authenticated, load existing skills
+                        loadSkills();
+                    } else {
+                        isAuthReady = true;
+                        console.log("Authentication failed or not yet completed.");
+                        showMessage("Please wait, authenticating...", 'info');
+                    }
+                });
+
+                // Sign in using custom token or anonymously
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase initialization or authentication error:", error);
+                showMessage(`Authentication failed: ${error.message}`, 'error');
+            }
+        });
+
+        // 2. Firestore Document Reference
+        function getUserSkillsDocRef() {
+            if (!userId || !db) return null;
+            // Private data path: /artifacts/{appId}/users/{userId}/skills
+            const userSkillsCollectionPath = `/artifacts/${appId}/users/${userId}/skills`;
+            const userSkillsDocPath = 'user_skills'; // Using a fixed document name for the user's skill object
+            
+            return doc(db, userSkillsCollectionPath, userSkillsDocPath);
+        }
+
+        // 3. Load Existing Skills to pre-select radio buttons
+        async function loadSkills() {
+            const userSkillsDocRef = getUserSkillsDocRef();
+            if (!userSkillsDocRef) {
+                console.warn("Cannot load skills: Auth not ready or userId missing.");
+                return;
+            }
+
+            try {
+                const docSnap = await getDoc(userSkillsDocRef);
+                if (docSnap.exists()) {
+                    const skillData = docSnap.data().skills || {};
+                    console.log("Loaded existing skills:", skillData);
+
+                    Object.keys(skillData).forEach(skill => {
+                        // The saved skill keys in Firestore are the 'clean' names
+                        const cleanSkillName = skill; 
+                        const role = skillData[skill].role;
+                        
+                        if (role === 'teach' || role === 'learn') {
+                            const radioId = document.querySelector(`input[name="role_for_skill_${cleanSkillName}"][value="${role}"]`)?.id;
+                            if (radioId) {
+                                document.getElementById(radioId).checked = true;
+                                
+                                // Manually trigger the change event to show upload containers for 'teach' skills
+                                if (role === 'teach') {
+                                    const event = new Event('change', { bubbles: true });
+                                    document.getElementById(radioId).dispatchEvent(event);
+
+                                    // Pre-fill link if available
+                                    const linkInput = document.querySelector(`input[name="link_for_skill_${cleanSkillName}"]`);
+                                    if (linkInput && skillData[skill].teaching_details?.link) {
+                                        linkInput.value = skillData[skill].teaching_details.link;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    showMessage("Existing skills loaded successfully.", 'success');
+                } else {
+                    showMessage("Welcome! Select your skills to begin.", 'info');
+                }
+            } catch (error) {
+                console.error("Error loading skills:", error);
+                showMessage("Failed to load existing skills.", 'error');
+            }
+        }
+
+
+        // 4. Handle Form Submission and Save to Firestore
+        document.getElementById('add-skill-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!isAuthReady || !userId) {
+                showMessage("Authentication not ready. Please wait a moment.", 'info');
+                return;
+            }
+
+            showMessage("Saving skills...", 'info');
+            saveButton.disabled = true;
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const selectedSkills = {};
+
+            // 1. Gather all selected skill roles
+            for (const [name, value] of formData.entries()) {
+                if (name.startsWith('role_for_skill_')) {
+                    // Extract the clean skill name from the form input name
+                    const cleanSkillName = name.substring('role_for_skill_'.length);
+
+                    // Check if this skill was explicitly selected (radio button is checked)
+                    const isChecked = document.querySelector(`input[name="${name}"][value="${value}"]:checked`);
+                    
+                    if (isChecked && (value === 'teach' || value === 'learn')) {
+                        selectedSkills[cleanSkillName] = { 
+                            role: value,
+                            // Initialize teaching details if teaching
+                            ...(value === 'teach' && { teaching_details: {} })
+                        };
+                    }
+                }
+            }
+
+            // 2. Add teaching details (links) to the teaching skills
+            for (const [name, value] of formData.entries()) {
+                if (name.startsWith('link_for_skill_') && value) {
+                    const cleanSkillName = name.substring('link_for_skill_'.length);
+                    if (selectedSkills[cleanSkillName] && selectedSkills[cleanSkillName].role === 'teach') {
+                         selectedSkills[cleanSkillName].teaching_details.link = value;
+                    }
+                }
+                // We ignore the file input since actual file upload requires Storage and is complex in this setup.
+            }
+            
+            // 3. Prepare Firestore payload
+            const dataToSave = {
+                userId: userId,
+                lastUpdated: new Date().toISOString(),
+                skills: selectedSkills
+            };
+
+            console.log("Data to save:", dataToSave);
+
+            const userSkillsDocRef = getUserSkillsDocRef();
+
+            try {
+                // Use setDoc to overwrite/create the document, ensuring all skills are updated at once
+                await setDoc(userSkillsDocRef, dataToSave);
+                showMessage("Skills successfully saved! You're ready to be matched.", 'success');
+            } catch (error) {
+                console.error("Error saving document:", error);
+                showMessage(`Failed to save skills: ${error.message}`, 'error');
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+
+        // 5. JavaScript to show/hide the upload section (existing logic, slightly optimized)
+        const form = document.getElementById('add-skill-form');
+        form.addEventListener('change', (event) => {
+            const target = event.target;
+            
+            // Only act on the radio buttons
+            if (target.type === 'radio' && target.name.startsWith('role_for_skill_')) {
+                const skillName = target.name.substring('role_for_skill_'.length);
+                const uploadContainer = document.querySelector(`[data-skill-upload-container="${skillName}"]`);
+                
+                if (uploadContainer) {
+                    // Check if the user selected "teach"
+                    if (target.value === 'teach' && target.checked) {
+                        uploadContainer.style.display = 'block';
+                    } else {
+                        uploadContainer.style.display = 'none';
+                        // Clear the file input when hiding
+                        uploadContainer.querySelector('input[type="file"]').value = '';
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
